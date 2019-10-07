@@ -32,7 +32,7 @@
  * THE AMOUNT OF FEES, IF ANY, THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR
  * THIS SOFTWARE.
  */
-#include "atca_basic_aes_gcm.h"
+#include "atca_basic.h"
 #include "atca_compiler.h"
 
 const char* atca_basic_aes_gcm_version = "1.0";

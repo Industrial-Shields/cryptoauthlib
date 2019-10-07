@@ -112,6 +112,35 @@ ATCA_STATUS atcab_aes_ctr_encrypt_block(atca_aes_ctr_ctx_t* ctx, const uint8_t* 
 ATCA_STATUS atcab_aes_ctr_decrypt_block(atca_aes_ctr_ctx_t* ctx, const uint8_t* ciphertext, uint8_t* plaintext);
 ATCA_STATUS atcab_aes_ctr_increment(atca_aes_ctr_ctx_t* ctx);
 
+extern const char* atca_basic_aes_gcm_version;
+
+/** Context structure for AES GCM operations.
+ */
+typedef struct atca_aes_gcm_ctx
+{
+    uint16_t key_id;                           //!< Key location. Can either be a slot number or ATCA_TEMPKEY_KEYID for TempKey.
+    uint8_t  key_block;                        //!< Index of the 16-byte block to use within the key location for the actual key.
+    uint8_t  cb[AES_DATA_SIZE];                //!< Counter block, comprises of nonce + count value (16 bytes).
+    uint32_t data_size;                        //!< Size of the data being encrypted/decrypted in bytes.
+    uint32_t aad_size;                         //!< Size of the additional authenticated data in bytes.
+    uint8_t  h[AES_DATA_SIZE];                 //!< Subkey for ghash functions in GCM.
+    uint8_t  j0[AES_DATA_SIZE];                //!< Precounter block generated from IV.
+    uint8_t  y[AES_DATA_SIZE];                 //!< Current GHASH output
+    uint8_t  partial_aad[AES_DATA_SIZE];       //!< Partial blocks of data waiting to be processed
+    uint32_t partial_aad_size;                 //!< Amount of data in the partial block buffer
+    uint8_t  enc_cb[AES_DATA_SIZE];            //!< Last encrypted counter block
+    uint8_t  ciphertext_block[AES_DATA_SIZE];  //!< Last ciphertext block
+} atca_aes_gcm_ctx_t;
+
+ATCA_STATUS atcab_aes_gcm_init(atca_aes_gcm_ctx_t* ctx, uint16_t key_id, uint8_t key_block, const uint8_t* iv, size_t iv_size);
+ATCA_STATUS atcab_aes_gcm_init_rand(atca_aes_gcm_ctx_t* ctx, uint16_t key_id, uint8_t key_block, size_t rand_size,
+                                    const uint8_t* free_field, size_t free_field_size, uint8_t* iv);
+ATCA_STATUS atcab_aes_gcm_aad_update(atca_aes_gcm_ctx_t* ctx, const uint8_t* aad, uint32_t aad_size);
+ATCA_STATUS atcab_aes_gcm_encrypt_update(atca_aes_gcm_ctx_t* ctx, const uint8_t* plaintext, uint32_t plaintext_size, uint8_t* ciphertext);
+ATCA_STATUS atcab_aes_gcm_encrypt_finish(atca_aes_gcm_ctx_t* ctx, uint8_t* tag, size_t tag_size);
+ATCA_STATUS atcab_aes_gcm_decrypt_update(atca_aes_gcm_ctx_t* ctx, const uint8_t* ciphertext, uint32_t ciphertext_size, uint8_t* plaintext);
+ATCA_STATUS atcab_aes_gcm_decrypt_finish(atca_aes_gcm_ctx_t* ctx, const uint8_t* tag, size_t tag_size, bool* is_verified);
+
 // CheckMAC command functions
 ATCA_STATUS atcab_checkmac(uint8_t mode, uint16_t key_id, const uint8_t *challenge, const uint8_t *response, const uint8_t *other_data);
 
